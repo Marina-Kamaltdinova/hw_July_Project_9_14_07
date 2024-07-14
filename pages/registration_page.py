@@ -1,5 +1,6 @@
 from selene import browser, command, have
 from demoqa_tests import resources
+from test_data.user import User
 
 
 class RegistrationPage:
@@ -33,11 +34,10 @@ class RegistrationPage:
 
     def type_birthday(self, month, year, day):
         browser.element('#dateOfBirthInput').perform(command.js.scroll_into_view).click()
-        browser.element('.react-datepicker__month-select').click()
-        browser.element('.react-datepicker__month-select').element(f'[value="{month}"]').click()
+        browser.element('.react-datepicker__month-select').type(month)
         browser.element('.react-datepicker__year-select').click()
         browser.element('.react-datepicker__year-select').element(f'[value="{year}"]').click()
-        browser.element(f'.react-datepicker__day--00{day}').click()
+        browser.element(f'.react-datepicker__day--0{day}').click()
         return self
 
     def type_hobbies(self):
@@ -64,14 +64,32 @@ class RegistrationPage:
         browser.element('#submit').press_enter()
         return self
 
-    def should_text(self, text):
-        browser.element("#example-modal-sizes-title-lg").should(have.text(text))
-        return self
+    def register(self, marina: User):
+        self.type_first_name(marina.name)
+        self.type_last_name(marina.lastname)
+        self.type_email(marina.email)
+        self.click_gender()
+        self.type_number(marina.number)
+        self.type_subject(marina.subject)
+        self.type_birthday(marina.birthday_month, marina.birthday_year, marina.birthday_day)
+        self.type_hobbies()
+        self.upload_photo(marina.photo)
+        self.type_address(marina.address)
+        self.type_state(marina.state)
+        self.type_city(marina.city)
+        self.click_submit()
 
-    def should_exact_text(self, first_name, email, gender, phone, birthday, hobbies, hobbies2, photo, address, city):
-        browser.element('.table').all('td').even.should(have.exact_texts(first_name, email, gender, phone, birthday,
-                                                                         hobbies, hobbies2, photo, address, city))
-        return self
+    def should_have_registered(self, marina: User):
+        browser.element('.table').all('td').even.should(have.exact_texts(f'{marina.name} {marina.lastname}',
+                                                                         f'{marina.email}',
+                                                                         f'{marina.gender}',
+                                                                         f'{marina.number}',
+                                                                         f'{marina.birthday_day} {marina.birthday_month},{marina.birthday_year}',
+                                                                         f'{marina.subject}',
+                                                                         f'{marina.hobbies}',
+                                                                         f'{marina.photo}',
+                                                                         f'{marina.address}',
+                                                                         f'{marina.state} {marina.city}'))
 
 
 registration = RegistrationPage()
